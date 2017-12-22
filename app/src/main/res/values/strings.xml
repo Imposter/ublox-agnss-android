@@ -1,0 +1,30 @@
+<resources>
+    <string name="app_name">µblox A-GNSS</string>
+
+    <!-- Startup activity -->
+    <string name="prompt_loading">Loading…</string>
+    <string name="prompt_permission_request_denied">Requested permission denied</string>
+
+    <!-- Main activity -->
+    <string name="title_activity_main">µblox Assisted GNSS</string>
+    <string name="prompt_current_location">Current Location</string>
+    <string name="prompt_bluetooth_unsupported">Bluetooth is not supported by your device</string>
+    <string name="prompt_bluetooth_not_enabled">Bluetooth is not enabled</string>
+    <string name="prompt_bluetooth_not_selected">Bluetooth device not selected</string>
+    <string name="prompt_bluetooth_connecting">Connecting to %s…</string>
+    <string name="prompt_bluetooth_connection_error">Unable to connect to %s</string>
+    <string name="prompt_bluetooth_connection_success">Successfully connected to %s!</string>
+
+    <!-- Bluetooth dialog -->
+    <string name="title_dialog_bluetooth">Select Bluetooth Device</string>
+    <string name="action_dialog_bluetooth_select">Select</string>
+    <string name="action_dialog_bluetooth_cancel">Cancel</string>
+    <string name="prompt_dialog_bluetooth_unknown">Unknown</string>
+    <string name="prompt_dialog_bluetooth_available">Available</string>
+    <string name="prompt_dialog_bluetooth_paired">Paired</string>
+    <string name="prompt_dialog_bluetooth_pairing">Pairing…</string>
+
+    <!-- Progress dialog -->
+    <string name="prompt_dialog_progress_loading">Loading…</string>
+
+</resources>
