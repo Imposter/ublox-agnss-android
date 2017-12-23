@@ -4,9 +4,9 @@ import android.support.annotation.NonNull;
 
 public final class UByte extends Number implements Comparable<UByte> {
     public static final int BYTES = 1;
-    public static final short MAX_VALUE = 0xFF;
-    public static final short MIN_VALUE = 0;
-    public static final int SIZE = 8;
+    public static final short MIN_VALUE = Unsigned.UNSIGNED_BYTE_MIN;
+    public static final short MAX_VALUE = Unsigned.UNSIGNED_BYTE_MAX;
+    public static final int SIZE = 16;
     public static final Class<UByte> TYPE = UByte.class;
 
     public static final UByte MIN = valueOf(MIN_VALUE);
@@ -15,59 +15,38 @@ public final class UByte extends Number implements Comparable<UByte> {
     private short mValue;
 
     public UByte(byte value) {
-        mValue = (short)(value & MAX_VALUE);
+        mValue = Unsigned.toUnsigned(value);
     }
 
-    public UByte(short unsignedByte) throws NumberFormatException {
-        mValue = unsignedByte;
-        checkRange();
+    public UByte(short unsignedInteger) throws NumberFormatException {
+        mValue = unsignedInteger;
+        Unsigned.wrap(mValue, MIN_VALUE, MAX_VALUE);
     }
 
     public UByte(String s) throws NumberFormatException {
         mValue = Short.parseShort(s);
-        checkRange();
+        Unsigned.wrap(mValue, MIN_VALUE, MAX_VALUE);
     }
 
     public UByte(String s, int radix) throws NumberFormatException {
         mValue = Short.parseShort(s, radix);
-        checkRange();
-    }
-
-    public static String toString(UByte s) {
-        return Short.toString(s.mValue);
-    }
-
-    public static UByte parseUByte(String s, int radix) throws NumberFormatException {
-        return new UByte(s, radix);
-    }
-
-    public static UByte parseUByte(String s) throws NumberFormatException {
-        return new UByte(s);
+        Unsigned.wrap(mValue, MIN_VALUE, MAX_VALUE);
     }
 
     public static UByte valueOf(String s, int radix) throws NumberFormatException {
-        return parseUByte(s, radix);
+        return new UByte(s, radix);
     }
 
     public static UByte valueOf(String s) throws NumberFormatException {
         return new UByte(s);
     }
 
-    public static UByte valueOf(byte s) throws NumberFormatException {
-        return new UByte(s);
+    public static UByte valueOf(byte signedValue) throws NumberFormatException {
+        return new UByte(signedValue);
     }
 
-    public static UByte valueOf(short i) throws NumberFormatException {
-        return new UByte(i);
-    }
-
-    public static UByte decode(String nm) throws NumberFormatException {
-        return new UByte(nm);
-    }
-
-    private void checkRange() throws NumberFormatException {
-        if (mValue < MIN_VALUE || mValue > MAX_VALUE)
-            throw new NumberFormatException("Value out of range: " + mValue);
+    public static UByte valueOf(short unsignedValue) throws NumberFormatException {
+        return new UByte(unsignedValue);
     }
 
     public byte byteValue() {
@@ -75,11 +54,11 @@ public final class UByte extends Number implements Comparable<UByte> {
     }
 
     public short shortValue() {
-        return mValue;
+        return (short)mValue;
     }
 
     public int intValue() {
-        return mValue;
+        return (int)mValue;
     }
 
     public long longValue() {
@@ -98,28 +77,91 @@ public final class UByte extends Number implements Comparable<UByte> {
         return Short.toString(mValue);
     }
 
-    public int hashCode() {
-        return Short.valueOf(mValue).hashCode();
-    }
-
-    public static int hashCode(UByte value) {
-        return Short.valueOf(value.mValue).hashCode();
-    }
-
     public boolean equals(Object obj) {
         return obj instanceof UByte && ((UByte)obj).mValue == mValue;
-
     }
 
-    public int compareTo(@NonNull UByte anotherUByte) {
-        return Short.valueOf(mValue).compareTo(anotherUByte.mValue);
+    public int compareTo(@NonNull UByte other) {
+        return Short.valueOf(mValue).compareTo(other.mValue);
     }
 
-    public static int compare(UByte x, UByte y) {
-        return Short.compare(x.mValue, y.mValue);
+    public UByte add(UByte value) {
+        return new UByte(Unsigned.add(mValue, value.mValue));
     }
 
-    public static byte toSignedByte(UByte x) {
-        return (byte)x.mValue;
+    public UByte add(short value) {
+        return new UByte(Unsigned.add(mValue, value));
+    }
+
+    public UByte subtract(UByte value) {
+        return new UByte(Unsigned.subtract(mValue, value.mValue));
+    }
+
+    public UByte subtract(short value) {
+        return new UByte(Unsigned.subtract(mValue, value));
+    }
+
+    public UByte multiply(UByte value) {
+        return new UByte(Unsigned.multiply(mValue, value.mValue));
+    }
+
+    public UByte multiply(short value) {
+        return new UByte(Unsigned.multiply(mValue, value));
+    }
+
+    public UByte divide(UByte value) {
+        return new UByte(Unsigned.divide(mValue, value.mValue));
+    }
+
+    public UByte divide(short value) {
+        return new UByte(Unsigned.divide(mValue, value));
+    }
+
+    public UByte mod(UByte value) {
+        return new UByte(Unsigned.mod(mValue, value.mValue));
+    }
+
+    public UByte mod(short value) {
+        return new UByte(Unsigned.mod(mValue, value));
+    }
+
+    public UByte and(UByte value) {
+        return new UByte(Unsigned.and(mValue, value.mValue));
+    }
+
+    public UByte and(short value) {
+        return new UByte(Unsigned.and(mValue, value));
+    }
+
+    public UByte or(UByte value) {
+        return new UByte(Unsigned.or(mValue, value.mValue));
+    }
+
+    public UByte or(short value) {
+        return new UByte(Unsigned.or(mValue, value));
+    }
+
+    public UByte xor(UByte value) {
+        return new UByte(Unsigned.xor(mValue, value.mValue));
+    }
+
+    public UByte xor(short value) {
+        return new UByte(Unsigned.xor(mValue, value));
+    }
+
+    public UByte shiftRight(UByte value) {
+        return new UByte(Unsigned.shiftRight(mValue, value.mValue));
+    }
+
+    public UByte shiftRight(short value) {
+        return new UByte(Unsigned.shiftRight(mValue, value));
+    }
+
+    public UByte shiftLeft(UByte value) {
+        return new UByte(Unsigned.shiftLeft(mValue, value.mValue));
+    }
+
+    public UByte shiftLeft(short value) {
+        return new UByte(Unsigned.shiftLeft(mValue, value));
     }
 }

@@ -3,10 +3,7 @@ package ca.indigogames.ubloxagps.ublox;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.UUID;
-import java.util.concurrent.TimeoutException;
 
-import ca.indigogames.ubloxagps.compat.UByte;
-import ca.indigogames.ubloxagps.compat.UShort;
 import ca.indigogames.ubloxagps.io.BinaryStream;
 import ca.indigogames.ubloxagps.io.IStream;
 import ca.indigogames.ubloxagps.utility.Random;
@@ -27,8 +24,8 @@ public class UbloxGPS {
     }
 
     private static final UUID TASK_UUID = Random.randomUUID();
-    private static final UByte UBX_PROTO_HEADER_B1 = UByte.valueOf((byte)0xB5);
-    private static final UByte UBX_PROTO_HEADER_B2 = UByte.valueOf((byte)0x62);
+    private static final short UBX_PROTO_HEADER_B1 = 0xB5;
+    private static final short UBX_PROTO_HEADER_B2 = 0x62;
 
     private IStream mStream;
     private BinaryStream mBinaryStream;
@@ -42,16 +39,14 @@ public class UbloxGPS {
 
     public void handle() throws Exception {
         // Read first byte
-        UByte b = mBinaryStream.readUInt8();
-        if (b.equals(UBX_PROTO_HEADER_B1)) {
+        short b = mBinaryStream.readUInt8();
+        if (b == UBX_PROTO_HEADER_B1) {
             // Read second byte
             b = mBinaryStream.readUInt8();
-            if (b.equals(UBX_PROTO_HEADER_B2)) {
+            if (b == UBX_PROTO_HEADER_B2) {
                 // Read message info
-                UByte classId = mBinaryStream.readUInt8();
-                UByte methodId = mBinaryStream.readUInt8();
-
-                // TODO: Remove compat classes and just implement them into BinaryStream
+                short classId = mBinaryStream.readUInt8();
+                short methodId = mBinaryStream.readUInt8();
 
                 // Read payload length
                 short length = mBinaryStream.readInt16();
@@ -62,11 +57,15 @@ public class UbloxGPS {
                     payload = mBinaryStream.readBlob(length);
 
                 // Read checksum
-                //var checksumA = await stream.ReadUInt8Async();
-                //var checksumB = await stream.ReadUInt8Async();
+                short checksumA = mBinaryStream.readUInt8();
+                short checksumB = mBinaryStream.readUInt8();
+
+                // TODO: Verify checksum
             } else {
                 throw new Exception("Unexpected character, expected " + UBX_PROTO_HEADER_B2);
             }
+        } else {
+            // TODO: NMEA, read entire line
         }
 
         // TODO: Don't return ACK messages to callback

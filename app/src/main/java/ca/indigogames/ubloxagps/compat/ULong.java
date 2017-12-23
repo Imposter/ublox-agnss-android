@@ -6,9 +6,9 @@ import java.math.BigInteger;
 
 public final class ULong extends Number implements Comparable<ULong> {
     public static final int BYTES = 8;
-    public static final BigInteger MAX_VALUE = new BigInteger("18446744073709551615");
-    public static final BigInteger MIN_VALUE = BigInteger.ZERO;
-    public static final int SIZE = 64;
+    public static final BigInteger MIN_VALUE = Unsigned.UNSIGNED_LONG_MIN;
+    public static final BigInteger MAX_VALUE = Unsigned.UNSIGNED_LONG_MAX;
+    public static final int SIZE = 32;
     public static final Class<ULong> TYPE = ULong.class;
 
     public static final ULong MIN = valueOf(MIN_VALUE);
@@ -17,59 +17,38 @@ public final class ULong extends Number implements Comparable<ULong> {
     private BigInteger mValue;
 
     public ULong(long value) {
-        mValue = MAX_VALUE.and(BigInteger.valueOf(value));
+        mValue = Unsigned.toUnsigned(value);
     }
 
-    public ULong(BigInteger unsignedInteger) throws NumberFormatException {
-        mValue = unsignedInteger;
-        checkRange();
+    public ULong(BigInteger unsignedValue) throws NumberFormatException {
+        mValue = unsignedValue;
+        Unsigned.wrap(mValue, MIN_VALUE, MAX_VALUE);
     }
 
     public ULong(String s) throws NumberFormatException {
         mValue = new BigInteger(s);
-        checkRange();
+        Unsigned.wrap(mValue, MIN_VALUE, MAX_VALUE);
     }
 
     public ULong(String s, int radix) throws NumberFormatException {
         mValue = new BigInteger(s, radix);
-        checkRange();
-    }
-
-    public static String toString(ULong s) {
-        return s.mValue.toString();
-    }
-
-    public static ULong parseUShort(String s, int radix) throws NumberFormatException {
-        return new ULong(s, radix);
-    }
-
-    public static ULong parseUShort(String s) throws NumberFormatException {
-        return new ULong(s);
+        Unsigned.wrap(mValue, MIN_VALUE, MAX_VALUE);
     }
 
     public static ULong valueOf(String s, int radix) throws NumberFormatException {
-        return parseUShort(s, radix);
+        return new ULong(s, radix);
     }
 
     public static ULong valueOf(String s) throws NumberFormatException {
         return new ULong(s);
     }
 
-    public static ULong valueOf(long s) throws NumberFormatException {
-        return new ULong(s);
+    public static ULong valueOf(long signedValue) throws NumberFormatException {
+        return new ULong(signedValue);
     }
 
-    public static ULong valueOf(BigInteger i) throws NumberFormatException {
-        return new ULong(i);
-    }
-
-    public static ULong decode(String nm) throws NumberFormatException {
-        return new ULong(nm);
-    }
-
-    private void checkRange() throws NumberFormatException {
-        if (mValue.compareTo(MIN_VALUE) < 0 || mValue.compareTo(MAX_VALUE) > 0)
-            throw new NumberFormatException("Value out of range: " + mValue);
+    public static ULong valueOf(BigInteger unsignedValue) throws NumberFormatException {
+        return new ULong(unsignedValue);
     }
 
     public byte byteValue() {
@@ -100,28 +79,91 @@ public final class ULong extends Number implements Comparable<ULong> {
         return mValue.toString();
     }
 
-    public int hashCode() {
-        return mValue.hashCode();
-    }
-
-    public static int hashCode(ULong value) {
-        return value.mValue.hashCode();
-    }
-
     public boolean equals(Object obj) {
         return obj instanceof ULong && ((ULong)obj).mValue.equals(mValue);
-
     }
 
-    public int compareTo(@NonNull ULong anotherUShort) {
-        return mValue.compareTo(anotherUShort.mValue);
+    public int compareTo(@NonNull ULong other) {
+        return mValue.compareTo(other.mValue);
     }
 
-    public static int compare(ULong x, ULong y) {
-        return x.mValue.compareTo(y.mValue);
+    public ULong add(ULong value) {
+        return new ULong(Unsigned.add(mValue, value.mValue));
     }
 
-    public static long toSignedLong(ULong x) {
-        return x.mValue.longValue();
+    public ULong add(BigInteger value) {
+        return new ULong(Unsigned.add(mValue, value));
+    }
+
+    public ULong subtract(ULong value) {
+        return new ULong(Unsigned.subtract(mValue, value.mValue));
+    }
+
+    public ULong subtract(BigInteger value) {
+        return new ULong(Unsigned.subtract(mValue, value));
+    }
+
+    public ULong multiply(ULong value) {
+        return new ULong(Unsigned.multiply(mValue, value.mValue));
+    }
+
+    public ULong multiply(BigInteger value) {
+        return new ULong(Unsigned.multiply(mValue, value));
+    }
+
+    public ULong divide(ULong value) {
+        return new ULong(Unsigned.divide(mValue, value.mValue));
+    }
+
+    public ULong divide(BigInteger value) {
+        return new ULong(Unsigned.divide(mValue, value));
+    }
+
+    public ULong mod(ULong value) {
+        return new ULong(Unsigned.mod(mValue, value.mValue));
+    }
+
+    public ULong mod(BigInteger value) {
+        return new ULong(Unsigned.mod(mValue, value));
+    }
+
+    public ULong and(ULong value) {
+        return new ULong(Unsigned.and(mValue, value.mValue));
+    }
+
+    public ULong and(BigInteger value) {
+        return new ULong(Unsigned.and(mValue, value));
+    }
+
+    public ULong or(ULong value) {
+        return new ULong(Unsigned.or(mValue, value.mValue));
+    }
+
+    public ULong or(BigInteger value) {
+        return new ULong(Unsigned.or(mValue, value));
+    }
+
+    public ULong xor(ULong value) {
+        return new ULong(Unsigned.xor(mValue, value.mValue));
+    }
+
+    public ULong xor(BigInteger value) {
+        return new ULong(Unsigned.xor(mValue, value));
+    }
+
+    public ULong shiftRight(ULong value) {
+        return new ULong(Unsigned.shiftRight(mValue, value.mValue));
+    }
+
+    public ULong shiftRight(BigInteger value) {
+        return new ULong(Unsigned.shiftRight(mValue, value));
+    }
+
+    public ULong shiftLeft(ULong value) {
+        return new ULong(Unsigned.shiftLeft(mValue, value.mValue));
+    }
+
+    public ULong shiftLeft(BigInteger value) {
+        return new ULong(Unsigned.shiftLeft(mValue, value));
     }
 }
