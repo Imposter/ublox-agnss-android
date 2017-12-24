@@ -1,38 +1,42 @@
 package ca.indigogames.ubloxagps.ublox.messages.ubx;
 
+import ca.indigogames.ubloxagps.compat.UInteger;
+import ca.indigogames.ubloxagps.compat.UShort;
 import ca.indigogames.ubloxagps.io.BinaryStream;
-import ca.indigogames.ubloxagps.ublox.Message;
+import ca.indigogames.ubloxagps.ublox.messages.UbxClassId;
+import ca.indigogames.ubloxagps.ublox.messages.UbxMessage;
+import ca.indigogames.ubloxagps.ublox.messages.UbxMethodId;
 
-public class AidIni implements Message {
-    public int ecefXOrLat; // int32
-    public int ecefYOrLon; // int32
-    public int ecefZOrAlt; // int32
-    public long posAcc; // uint32
+public class AidInitialize implements UbxMessage {
+    public Integer ecefXOrLat; // int32
+    public Integer ecefYOrLon; // int32
+    public Integer ecefZOrAlt; // int32
+    public UInteger posAcc; // uint32
 
-    public short tmCfg; // int16
+    public Short tmCfg; // int16
 
-    public int wnoOrDate; // uint16
-    public long towOrDate; // uint32
-    public int towNs; // int32
-    public long tAccMs; // uint32
-    public long tAccNs; // uint32
-    public int clkDOrFreq; // int32
-    public long clkDAccOrFreq; // uint32
+    public UShort wnoOrDate; // uint16
+    public UInteger towOrDate; // uint32
+    public Integer towNs; // int32
+    public UInteger tAccMs; // uint32
+    public UInteger tAccNs; // uint32
+    public Integer clkDOrFreq; // int32
+    public UInteger clkDAccOrFreq; // uint32
 
     public Integer flags;
 
     @Override
     public int getClassId() {
-        return ClassId.AID;
+        return UbxClassId.AID;
     }
 
     @Override
     public int getMethodId() {
-        return MethodId.AID_INI;
+        return UbxMethodId.AID_INI;
     }
 
     @Override
-    public void read(BinaryStream payloadStream) throws Exception {
+    public void deserialize(BinaryStream payloadStream) throws Exception {
         ecefXOrLat = payloadStream.readInt32();
         ecefYOrLon = payloadStream.readInt32();
         ecefZOrAlt = payloadStream.readInt32();
@@ -52,7 +56,7 @@ public class AidIni implements Message {
     }
 
     @Override
-    public void write(BinaryStream payloadStream) throws Exception {
+    public void serialize(BinaryStream payloadStream) throws Exception {
         payloadStream.writeInt32(ecefXOrLat);
         payloadStream.writeInt32(ecefYOrLon);
         payloadStream.writeInt32(ecefZOrAlt);

@@ -21,15 +21,16 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.Marker;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 
-import ca.indigogames.ubloxagps.compat.UInteger;
-import ca.indigogames.ubloxagps.compat.ULong;
-import ca.indigogames.ubloxagps.compat.UShort;
+import ca.indigogames.ubloxagps.compat.UByte;
+import ca.indigogames.ubloxagps.io.BinaryStream;
+import ca.indigogames.ubloxagps.io.TimedStream;
 import ca.indigogames.ubloxagps.task.AsyncTaskCallback;
 import ca.indigogames.ubloxagps.task.AsyncTaskResult;
 import ca.indigogames.ubloxagps.R;
@@ -38,11 +39,14 @@ import ca.indigogames.ubloxagps.task.TaskManager;
 import ca.indigogames.ubloxagps.app.dialog.BluetoothDialog;
 import ca.indigogames.ubloxagps.app.dialog.ProgressDialog;
 import ca.indigogames.ubloxagps.app.task.BluetoothConnectTask;
-import ca.indigogames.ubloxagps.io.BinaryStream;
-import ca.indigogames.ubloxagps.io.MemoryStream;
+import ca.indigogames.ubloxagps.ublox.UbloxGps;
+import ca.indigogames.ubloxagps.ublox.messages.NmeaMessageId;
+import ca.indigogames.ubloxagps.ublox.messages.NmeaPrefixId;
+import ca.indigogames.ubloxagps.ublox.messages.nmea.GpsLatLong;
 
 public class MainActivity extends FragmentActivity implements OnMapReadyCallback {
     private static final int REQUEST_ENABLE_BLUETOOTH = 10000;
+    private static final int BLUETOOTH_SOCKET_TIMEOUT = 2500;
 
     private GoogleMap mMap;
     private Marker mMarker;
@@ -52,6 +56,10 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     private BluetoothSocket mBluetoothSocket;
 
     private ProgressDialog mProgressDialog;
+
+    private UbloxGps mGPS;
+    private TimedStream mGPSStream;
+    private Future mGPSTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -123,6 +131,11 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
         // Cancel all tasks
         TaskManager.cancelAllTasks(this);
+
+        // Cancel reading task
+        if (mGPSTask != null) {
+            mGPSTask.cancel(true);
+        }
 
         // Close connection if open
         if (mBluetoothSocket != null && mBluetoothSocket.isConnected()) {
@@ -308,35 +321,67 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         );
     }
 
-    // TODO: Do NOT push this repo to github, as it contains
-    // 1. ublox logos
-    // 2. ublox API key (make a private server which caches alm) and broadcasts it
     // TODO: Reverse engineer AID-INI/AID-ALM packets
     private void runBluetoothThread() {
-        // Start background task to print to console
-        Task.run(new Callable<Void>() {
-            @Override
-            public Void call() throws Exception {
-                InputStream stream = mBluetoothSocket.getInputStream();
-                InputStreamReader inputStreamReader = new InputStreamReader(stream);
-                BufferedReader reader = new BufferedReader(inputStreamReader);
+        try {
+            InputStream inputStream = mBluetoothSocket.getInputStream();
+            OutputStream outputStream = mBluetoothSocket.getOutputStream();
 
-                try {
-                    String line;
-                    while (mBluetoothSocket.isConnected()
-                            && (line = reader.readLine()) != null) {
-                        Log.d("MainActivity", String.format("Received: %s", line));
+            // Create stream and GPS
+            mGPSStream = new TimedStream(inputStream, outputStream);
+            mGPS = new UbloxGps(mGPSStream);
 
+            // Create callback
+            mGPS.setReceiveCallback(new UbloxGps.ReceiveCallback() {
+                @Override
+                public void onUbxMessage(UByte classId, UByte messageId, BinaryStream dataStream) {
 
-                        //http://online-live1.services.u-blox.com/GetOnlineData.ashx?token=27RCcNZGPU6t-rhOlU7KUg;gnss=gps;datatype=alm;lat=43.750619;lon=-79.221536;alt=-22.190000;pacc=999999.000000;format=aid
-                    }
-                } catch (Exception ex) {
-                    Log.e("MainActivity", "Unable to read bluetooth message");
-                    ex.printStackTrace();
                 }
 
-                return null;
-            }
-        });
+                @Override
+                public void onNmeaMessage(String prefixId, String messageId, List<String> data) {
+                    if (prefixId.equals(NmeaPrefixId.GP)) { // GPS
+                        if (messageId.equals(NmeaMessageId.GLL)) { // Lat/Lng
+                            // TODO: Mark on map
+                            GpsLatLong message = new GpsLatLong();
+                            try {
+                                message.deserialize(data);
+
+                                Log.d("MainActivity",
+                                        String.format("Current location: %f%s %f%s",
+                                                message.latitude, message.vDirection,
+                                                message.longitude, message.hDirection
+                                        )
+                                );
+                            } catch (Exception ex) {
+                                ex.printStackTrace();
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Start background task to print to console
+            mGPSTask = Task.run(new Callable<Void>() {
+                @Override
+                public Void call() throws Exception {
+                    try {
+                        while (mBluetoothSocket.isConnected()) {
+                            mGPS.handle();
+                        }
+                    } catch (Exception ex) {
+                        Log.e("MainActivity", "Unable to read/handle bluetooth message");
+                        ex.printStackTrace();
+
+                        // TODO: Disconnect and exit
+                    }
+
+                    return null;
+                }
+            });
+        } catch (Exception ex) {
+            Log.e("MainActivity", "Unable to read bluetooth message");
+            ex.printStackTrace();
+        }
     }
 }

@@ -1,6 +1,6 @@
-package ca.indigogames.ubloxagps.ublox.messages.ubx;
+package ca.indigogames.ubloxagps.ublox.messages;
 
-public class ClassId {
+public class UbxClassId {
     public static final byte NAV = 0x01;
     public static final byte RXM = 0x02;
     public static final byte INF = 0x04;

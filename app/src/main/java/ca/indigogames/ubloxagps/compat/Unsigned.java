@@ -199,13 +199,13 @@ public final class Unsigned {
         BigInteger minNum = new BigInteger(min.toString());
         BigInteger maxNum = new BigInteger(max.toString());
 
-        if (num.compareTo(minNum) < 0) {
+        while (num.compareTo(minNum) < 0) {
             num = num.add(maxNum);
         }
 
-        do {
+        while (num.compareTo(maxNum) > 0) {
             num = num.subtract(maxNum);
-        } while (num.compareTo(maxNum) > 0);
+        }
 
         return (TNumber)num;
     }

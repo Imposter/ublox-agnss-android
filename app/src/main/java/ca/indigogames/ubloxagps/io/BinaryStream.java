@@ -1,9 +1,15 @@
 package ca.indigogames.ubloxagps.io;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.concurrent.TimeoutException;
+
+import ca.indigogames.ubloxagps.compat.UByte;
+import ca.indigogames.ubloxagps.compat.UInteger;
+import ca.indigogames.ubloxagps.compat.ULong;
+import ca.indigogames.ubloxagps.compat.UShort;
 
 public class BinaryStream {
     private static final short UNSIGNED_BYTE_MIN = 0;
@@ -17,7 +23,7 @@ public class BinaryStream {
     private int mPeekByte;
     private boolean mBigEndian;
 
-    private int readBytes(byte[] buffer, int length) {
+    private int readBytes(byte[] buffer, int length) throws IOException {
         if (mPeekByte != -1) {
             buffer[0] = (byte)mPeekByte;
             mPeekByte = -1;
@@ -27,7 +33,7 @@ public class BinaryStream {
         return mStream.read(buffer, 0, length);
     }
 
-    public int peek() {
+    public int peek() throws IOException {
         if (mPeekByte != -1)
             return mPeekByte;
 
@@ -40,30 +46,30 @@ public class BinaryStream {
         return -1;
     }
 
-    public int read() {
+    public int read() throws IOException {
         byte[] b = new byte[1];
         return readBytes(b, b.length) < 0 ? -1 : b[0];
     }
 
-    public void write(byte obj) {
+    public void write(byte obj) throws IOException {
         byte[] b = { obj };
         mStream.write(b, 0, b.length);
     }
 
-    public boolean read(byte[] buffer, int length) {
+    public boolean read(byte[] buffer, int length) throws IOException {
         return mStream.read(buffer, 0, length) == length;
     }
 
-    public void write(byte[] buffer, int length) {
+    public void write(byte[] buffer, int length) throws IOException {
         mStream.write(buffer, 0, length);
     }
 
-    public void write(String str, String encoding) throws UnsupportedEncodingException {
+    public void write(String str, String encoding) throws IOException {
         byte[] bytes = str.getBytes(encoding);
         mStream.write(bytes, 0, bytes.length);
     }
 
-    public void write(String str) throws UnsupportedEncodingException {
+    public void write(String str) throws IOException {
         write(str, "UTF-8");
     }
 
@@ -91,7 +97,7 @@ public class BinaryStream {
         mBigEndian = bigEndian;
     }
 
-    public boolean readBoolean() throws TimeoutException {
+    public boolean readBoolean() throws TimeoutException, IOException {
         int b = read();
         if (b < 0)
             throw new TimeoutException("Unable to read data");
@@ -99,7 +105,7 @@ public class BinaryStream {
         return b == 1;
     }
 
-    public char readChar() throws TimeoutException {
+    public Character readChar() throws TimeoutException, IOException {
         int b = read();
         if (b < 0)
             throw new TimeoutException("Unable to read data");
@@ -107,7 +113,7 @@ public class BinaryStream {
         return (char)b;
     }
 
-    public byte readInt8() throws TimeoutException {
+    public Byte readInt8() throws TimeoutException, IOException {
         int b = read();
         if (b < 0)
             throw new TimeoutException("Unable to read data");
@@ -115,15 +121,15 @@ public class BinaryStream {
         return (byte)b;
     }
 
-    public short readUInt8() throws TimeoutException {
+    public UByte readUInt8() throws TimeoutException, IOException {
         byte[] buffer = new byte[1];
         if (!read(buffer, buffer.length))
             throw new TimeoutException("Unable to read data");
 
-        return (short)(buffer[0] & 0xFF);
+        return UByte.valueOf(buffer[0]);
     }
 
-    public short readInt16() throws TimeoutException {
+    public Short readInt16() throws TimeoutException, IOException {
         byte[] buffer = new byte[2];
         if (!read(buffer, buffer.length))
             throw new TimeoutException("Unable to read data");
@@ -132,17 +138,17 @@ public class BinaryStream {
                 ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN).getShort();
     }
 
-    public int readUInt16() throws TimeoutException {
+    public UShort readUInt16() throws TimeoutException, IOException {
         byte[] buffer = new byte[2];
         if (!read(buffer, buffer.length))
             throw new TimeoutException("Unable to read data");
 
         short obj = ByteBuffer.wrap(buffer).order(mBigEndian
                 ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN).getShort();
-        return obj & 0xFFFF;
+        return UShort.valueOf(obj);
     }
 
-    public int readInt32() throws TimeoutException {
+    public Integer readInt32() throws TimeoutException, IOException {
         byte[] buffer = new byte[4];
         if (!read(buffer, buffer.length))
             throw new TimeoutException("Unable to read data");
@@ -151,17 +157,36 @@ public class BinaryStream {
                 ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN).getInt();
     }
 
-    public long readUInt32() throws TimeoutException {
+    public UInteger readUInt32() throws TimeoutException, IOException {
         byte[] buffer = new byte[4];
         if (!read(buffer, buffer.length))
             throw new TimeoutException("Unable to read data");
 
         int obj = ByteBuffer.wrap(buffer).order(mBigEndian
                 ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN).getInt();
-        return obj & 0xFFFFFFFFL;
+        return UInteger.valueOf(obj);
     }
 
-    public float readFloat() throws TimeoutException {
+    public Long readInt64() throws TimeoutException, IOException {
+        byte[] buffer = new byte[8];
+        if (!read(buffer, buffer.length))
+            throw new TimeoutException("Unable to read data");
+
+        return ByteBuffer.wrap(buffer).order(mBigEndian
+                ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN).getLong();
+    }
+
+    public ULong readUInt64() throws TimeoutException, IOException {
+        byte[] buffer = new byte[8];
+        if (!read(buffer, buffer.length))
+            throw new TimeoutException("Unable to read data");
+
+        long obj = ByteBuffer.wrap(buffer).order(mBigEndian
+                ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN).getLong();
+        return ULong.valueOf(obj);
+    }
+
+    public Float readFloat() throws TimeoutException, IOException {
         byte[] buffer = new byte[4];
         if (!read(buffer, buffer.length))
             throw new TimeoutException("Unable to read data");
@@ -170,7 +195,7 @@ public class BinaryStream {
                 ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN).getFloat();
     }
 
-    public double readDouble() throws TimeoutException {
+    public Double readDouble() throws TimeoutException, IOException {
         byte[] buffer = new byte[8];
         if (!read(buffer, buffer.length))
             throw new TimeoutException("Unable to read data");
@@ -179,8 +204,7 @@ public class BinaryStream {
                 ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN).getDouble();
     }
 
-    public String readString(int length, String encoding)
-            throws UnsupportedEncodingException, TimeoutException {
+    public String readString(int length, String encoding) throws TimeoutException, IOException {
         // Calculate real length with the specified encoding
         byte[] tempBuffer = "A".getBytes(encoding);
         length *= tempBuffer.length;
@@ -193,11 +217,11 @@ public class BinaryStream {
 
     }
 
-    public String readString(int length) throws UnsupportedEncodingException, TimeoutException {
+    public String readString(int length) throws TimeoutException, IOException {
         return readString(length, "UTF-8");
     }
 
-    public byte[] readBlob(int length) throws TimeoutException {
+    public byte[] readBlob(int length) throws TimeoutException, IOException {
         byte[] buffer = new byte[length];
         if (!read(buffer, length))
             throw new TimeoutException("Unable to read data");
@@ -205,27 +229,24 @@ public class BinaryStream {
         return buffer;
     }
 
-    public void writeBoolean(boolean obj) {
+    public void writeBoolean(Boolean obj) throws IOException {
         write((byte)(obj ? 1 : 0));
     }
 
-    public void writeChar(char obj) {
-        write((byte)obj);
+    public void writeChar(Character obj) throws IOException {
+        write((byte)obj.charValue());
     }
 
-    public void writeInt8(byte obj) {
+    public void writeInt8(Byte obj) throws IOException {
         write(obj);
     }
 
-    public void writeUInt8(short obj) {
+    public void writeUInt8(UByte obj) throws IOException {
         // Check bounds
-        if (obj < UNSIGNED_BYTE_MIN || obj > UNSIGNED_BYTE_MAX)
-            throw new IllegalArgumentException("Argument exceeded type min/max");
-
-        write((byte)obj);
+        write(obj.byteValue());
     }
 
-    public void writeInt16(short obj) {
+    public void writeInt16(Short obj) throws IOException {
         ByteBuffer buffer = ByteBuffer.allocate(2);
         buffer.putShort(obj);
         if (!mBigEndian)
@@ -233,19 +254,15 @@ public class BinaryStream {
         write(buffer.array(), 2);
     }
 
-    public void writeUInt16(int obj) {
-        // Check bounds
-        if (obj < UNSIGNED_SHORT_MIN || obj > UNSIGNED_SHORT_MAX)
-            throw new IllegalArgumentException("Argument exceeded type min/max");
-
+    public void writeUInt16(UShort obj) throws IOException {
         ByteBuffer buffer = ByteBuffer.allocate(2);
-        buffer.putShort((short)obj);
+        buffer.putShort(obj.shortValue());
         if (!mBigEndian)
             buffer.flip();
         write(buffer.array(), 2);
     }
 
-    public void writeInt32(int obj) {
+    public void writeInt32(Integer obj) throws IOException {
         ByteBuffer buffer = ByteBuffer.allocate(4);
         buffer.putInt(obj);
         if (!mBigEndian)
@@ -253,19 +270,31 @@ public class BinaryStream {
         write(buffer.array(), 4);
     }
 
-    public void writeUInt32(long obj) {
-        // Check bounds
-        if (obj < UNSIGNED_INTEGER_MIN || obj > UNSIGNED_INTEGER_MAX)
-            throw new IllegalArgumentException("Argument exceeded type min/max");
-
+    public void writeUInt32(UInteger obj) throws IOException {
         ByteBuffer buffer = ByteBuffer.allocate(4);
-        buffer.putInt((int)obj);
+        buffer.putInt(obj.intValue());
         if (!mBigEndian)
             buffer.flip();
         write(buffer.array(), 4);
     }
 
-    public void writeFloat(float obj) {
+    public void writeInt64(Long obj) throws IOException {
+        ByteBuffer buffer = ByteBuffer.allocate(8);
+        buffer.putLong(obj);
+        if (!mBigEndian)
+            buffer.flip();
+        write(buffer.array(), 8);
+    }
+
+    public void writeUInt64(ULong obj) throws IOException {
+        ByteBuffer buffer = ByteBuffer.allocate(8);
+        buffer.putLong(obj.longValue());
+        if (!mBigEndian)
+            buffer.flip();
+        write(buffer.array(), 8);
+    }
+
+    public void writeFloat(Float obj) throws IOException {
         ByteBuffer buffer = ByteBuffer.allocate(4);
         buffer.putFloat(obj);
         if (!mBigEndian)
@@ -273,7 +302,7 @@ public class BinaryStream {
         write(buffer.array(), 4);
     }
 
-    public void writeDouble(double obj) {
+    public void writeDouble(Double obj) throws IOException {
         ByteBuffer buffer = ByteBuffer.allocate(8);
         buffer.putDouble(obj);
         if (!mBigEndian)
@@ -281,13 +310,12 @@ public class BinaryStream {
         write(buffer.array(), 8);
     }
 
-    public void writeString(String obj, String encoding)
-            throws UnsupportedEncodingException {
+    public void writeString(String obj, String encoding) throws IOException {
         byte[] buffer = obj.getBytes(encoding);
         write(buffer, buffer.length);
     }
 
-    public void writeBlob(byte[] obj) {
+    public void writeBlob(byte[] obj) throws IOException {
         write(obj, obj.length);
     }
 }

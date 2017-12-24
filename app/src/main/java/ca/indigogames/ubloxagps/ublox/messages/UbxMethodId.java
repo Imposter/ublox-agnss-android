@@ -1,6 +1,6 @@
-package ca.indigogames.ubloxagps.ublox.messages.ubx;
+package ca.indigogames.ubloxagps.ublox.messages;
 
-public class MethodId {
+public class UbxMethodId {
     public static final int ACK_ACK = 0x01;
     public static final int ACK_NACK = 0x00;
 
