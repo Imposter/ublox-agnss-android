@@ -1,13 +1,14 @@
 package ca.indigogames.ubloxagps.ublox.messages.ubx;
 
+import ca.indigogames.ubloxagps.compat.UByte;
 import ca.indigogames.ubloxagps.compat.UInteger;
 import ca.indigogames.ubloxagps.compat.UShort;
 import ca.indigogames.ubloxagps.io.BinaryStream;
 import ca.indigogames.ubloxagps.ublox.messages.UbxClassId;
-import ca.indigogames.ubloxagps.ublox.messages.UbxMessage;
+import ca.indigogames.ubloxagps.ublox.messages.UbxHandler;
 import ca.indigogames.ubloxagps.ublox.messages.UbxMethodId;
 
-public class AidInitialize implements UbxMessage {
+public class AidInitialize {
     public Integer ecefXOrLat; // int32
     public Integer ecefYOrLon; // int32
     public Integer ecefZOrAlt; // int32
@@ -25,53 +26,61 @@ public class AidInitialize implements UbxMessage {
 
     public Integer flags;
 
-    @Override
-    public int getClassId() {
-        return UbxClassId.AID;
-    }
+    public static class Handler implements UbxHandler<AidInitialize> {
 
-    @Override
-    public int getMethodId() {
-        return UbxMethodId.AID_INI;
-    }
+        @Override
+        public UByte getClassId() {
+            return UbxClassId.AID;
+        }
 
-    @Override
-    public void deserialize(BinaryStream payloadStream) throws Exception {
-        ecefXOrLat = payloadStream.readInt32();
-        ecefYOrLon = payloadStream.readInt32();
-        ecefZOrAlt = payloadStream.readInt32();
-        posAcc = payloadStream.readUInt32();
+        @Override
+        public UByte getMethodId() {
+            return UbxMethodId.AID_INI;
+        }
 
-        tmCfg = payloadStream.readInt16();
+        @Override
+        public AidInitialize deserialize(BinaryStream payloadStream) throws Exception {
+            AidInitialize result = new AidInitialize();
 
-        wnoOrDate = payloadStream.readUInt16();
-        towOrDate = payloadStream.readUInt32();
-        towNs = payloadStream.readInt32();
-        tAccMs = payloadStream.readUInt32();
-        tAccNs = payloadStream.readUInt32();
-        clkDOrFreq = payloadStream.readInt32();
-        clkDAccOrFreq = payloadStream.readUInt32();
+            // Read fields
+            result.ecefXOrLat = payloadStream.readInt32();
+            result.ecefYOrLon = payloadStream.readInt32();
+            result.ecefZOrAlt = payloadStream.readInt32();
+            result.posAcc = payloadStream.readUInt32();
 
-        flags = payloadStream.readInt32();
-    }
+            result.tmCfg = payloadStream.readInt16();
 
-    @Override
-    public void serialize(BinaryStream payloadStream) throws Exception {
-        payloadStream.writeInt32(ecefXOrLat);
-        payloadStream.writeInt32(ecefYOrLon);
-        payloadStream.writeInt32(ecefZOrAlt);
-        payloadStream.writeUInt32(posAcc);
+            result.wnoOrDate = payloadStream.readUInt16();
+            result.towOrDate = payloadStream.readUInt32();
+            result.towNs = payloadStream.readInt32();
+            result.tAccMs = payloadStream.readUInt32();
+            result.tAccNs = payloadStream.readUInt32();
+            result.clkDOrFreq = payloadStream.readInt32();
+            result.clkDAccOrFreq = payloadStream.readUInt32();
 
-        payloadStream.writeInt16(tmCfg);
+            result.flags = payloadStream.readInt32();
 
-        payloadStream.writeUInt16(wnoOrDate);
-        payloadStream.writeUInt32(towOrDate);
-        payloadStream.writeInt32(towNs);
-        payloadStream.writeUInt32(tAccMs);
-        payloadStream.writeUInt32(tAccNs);
-        payloadStream.writeInt32(clkDOrFreq);
-        payloadStream.writeUInt32(clkDAccOrFreq);
+            return result;
+        }
 
-        payloadStream.writeInt32(flags);
+        @Override
+        public void serialize(BinaryStream payloadStream, AidInitialize aidInitialize) throws Exception {
+            payloadStream.writeInt32(aidInitialize.ecefXOrLat);
+            payloadStream.writeInt32(aidInitialize.ecefYOrLon);
+            payloadStream.writeInt32(aidInitialize.ecefZOrAlt);
+            payloadStream.writeUInt32(aidInitialize.posAcc);
+
+            payloadStream.writeInt16(aidInitialize.tmCfg);
+
+            payloadStream.writeUInt16(aidInitialize.wnoOrDate);
+            payloadStream.writeUInt32(aidInitialize.towOrDate);
+            payloadStream.writeInt32(aidInitialize.towNs);
+            payloadStream.writeUInt32(aidInitialize.tAccMs);
+            payloadStream.writeUInt32(aidInitialize.tAccNs);
+            payloadStream.writeInt32(aidInitialize.clkDOrFreq);
+            payloadStream.writeUInt32(aidInitialize.clkDAccOrFreq);
+
+            payloadStream.writeInt32(aidInitialize.flags);
+        }
     }
 }

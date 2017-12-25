@@ -1,10 +1,12 @@
 package ca.indigogames.ubloxagps.ublox.messages;
 
-public class UbxMethodId {
-    public static final int ACK_ACK = 0x01;
-    public static final int ACK_NACK = 0x00;
+import ca.indigogames.ubloxagps.compat.UByte;
 
-    public static final int AID_INI = 0x01;
-    public static final int AID_ALM = 0x30;
-    public static final int AID_EPH = 0x31;
+public class UbxMethodId {
+    public static final UByte ACK_ACK = UByte.valueOf((byte)0x01);
+    public static final UByte ACK_NACK = UByte.valueOf((byte)0x00);
+
+    public static final UByte AID_INI = UByte.valueOf((byte)0x01);
+    public static final UByte AID_ALM = UByte.valueOf((byte)0x30);
+    public static final UByte AID_EPH = UByte.valueOf((byte)0x31);
 }

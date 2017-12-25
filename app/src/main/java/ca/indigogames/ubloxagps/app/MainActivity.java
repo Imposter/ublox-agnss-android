@@ -334,28 +334,23 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
             // Create callback
             mGPS.setReceiveCallback(new UbloxGps.ReceiveCallback() {
                 @Override
-                public void onUbxMessage(UByte classId, UByte messageId, BinaryStream dataStream) {
+                public void onUbxMessage(UByte classId, UByte messageId, Object data) {
 
                 }
 
                 @Override
-                public void onNmeaMessage(String prefixId, String messageId, List<String> data) {
+                public void onNmeaMessage(String prefixId, String messageId, Object data) {
                     if (prefixId.equals(NmeaPrefixId.GP)) { // GPS
                         if (messageId.equals(NmeaMessageId.GLL)) { // Lat/Lng
                             // TODO: Mark on map
-                            GpsLatLong message = new GpsLatLong();
-                            try {
-                                message.deserialize(data);
+                            GpsLatLong message = (GpsLatLong) data;
 
-                                Log.d("MainActivity",
-                                        String.format("Current location: %f%s %f%s",
-                                                message.latitude, message.vDirection,
-                                                message.longitude, message.hDirection
-                                        )
-                                );
-                            } catch (Exception ex) {
-                                ex.printStackTrace();
-                            }
+                            Log.d("MainActivity",
+                                    String.format("Current location: %f%s %f%s",
+                                            message.latitude, message.vDirection,
+                                            message.longitude, message.hDirection
+                                    )
+                            );
                         }
                     }
                 }

@@ -5,12 +5,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import ca.indigogames.ubloxagps.ublox.messages.NmeaMessage;
+import ca.indigogames.ubloxagps.ublox.messages.NmeaHandler;
 import ca.indigogames.ubloxagps.ublox.messages.NmeaMessageId;
 import ca.indigogames.ubloxagps.ublox.messages.NmeaPrefixId;
 
-// Useful stuff: http://freenmea.net/docs
-public class GpsLatLong implements NmeaMessage {
+public class GpsLatLong {
     public Float latitude;
     public String vDirection;
     public Float longitude;
@@ -18,35 +17,41 @@ public class GpsLatLong implements NmeaMessage {
     public Date utcTime; // UTC
     public String status;
 
-    @Override
-    public String getPrefixId() {
-        return NmeaPrefixId.GP;
-    }
+    public static class Handler implements NmeaHandler<GpsLatLong> {
+        @Override
+        public String getPrefixId() {
+            return NmeaPrefixId.GP;
+        }
 
-    @Override
-    public String getMessageId() {
-        return NmeaMessageId.GLL;
-    }
+        @Override
+        public String getMessageId() {
+            return NmeaMessageId.GLL;
+        }
 
-    @Override
-    public void deserialize(List<String> data) throws Exception {
-        // Get location
-        latitude = !data.get(0).isEmpty() ? Float.parseFloat(data.get(0)) / 100 : 0;
-        vDirection = data.get(1);
-        longitude = !data.get(2).isEmpty() ? Float.parseFloat(data.get(2)) / 100 : 0;
-        hDirection = data.get(3);
+        @Override
+        public GpsLatLong deserialize(List<String> data) throws Exception {
+            GpsLatLong result = new GpsLatLong();
 
-        // Parse time
-        String time = data.get(4);
-        SimpleDateFormat dateFormat = new SimpleDateFormat("HHmmss.SS", Locale.ENGLISH);
-        utcTime = dateFormat.parse(time);
+            // Get location
+            result.latitude = !data.get(0).isEmpty() ? Float.parseFloat(data.get(0)) / 100 : 0;
+            result.vDirection = data.get(1);
+            result.longitude = !data.get(2).isEmpty() ? Float.parseFloat(data.get(2)) / 100 : 0;
+            result.hDirection = data.get(3);
 
-        // Get status
-        data.get(5);
-    }
+            // Parse time
+            String time = data.get(4);
+            SimpleDateFormat dateFormat = new SimpleDateFormat("HHmmss.SS", Locale.ENGLISH);
+            result.utcTime = dateFormat.parse(time);
 
-    @Override
-    public List<String> serialize() throws Exception {
-        throw new UnsupportedOperationException("Serialization not supported for type");
+            // Get status
+            result.status = data.get(5);
+
+            return result;
+        }
+
+        @Override
+        public List<String> serialize(GpsLatLong gpsLatLong) throws Exception {
+            throw new UnsupportedOperationException("Serialization not supported for type");
+        }
     }
 }
